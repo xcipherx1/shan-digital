@@ -1,26 +1,205 @@
 @import "tailwindcss";
 
+/* ── Design tokens ─────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0a0b10;
+  --ink-2: #11131c;
+  --ink-3: #181b27;
+  --lime: #c9f73a;
+  --lime-deep: #a8d51e;
+  --teal: #2dd4bf;
+  --cream: #f4f1ea;
+  --cream-2: #ebe6da;
+  --mist: #edede6;
+  --coal: #14150f;
+  --muted: #9da3b4;
+  --line: rgba(237, 237, 230, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-lime: var(--lime);
+  --color-lime-deep: var(--lime-deep);
+  --color-teal: var(--teal);
+  --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
+  --color-mist: var(--mist);
+  --color-coal: var(--coal);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, serif;
+  --font-label: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ink);
+  color: var(--mist);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: clip;
+}
+
+/* Native cursor hidden only when the custom cursor is active */
+body.has-custom-cursor,
+body.has-custom-cursor a,
+body.has-custom-cursor button,
+body.has-custom-cursor [role="tab"],
+body.has-custom-cursor input,
+body.has-custom-cursor textarea,
+body.has-custom-cursor summary {
+  cursor: none;
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--coal);
+}
+
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.on-light :focus-visible {
+  outline-color: var(--coal);
+}
+
+/* ── Utilities ─────────────────────────────────────────────────── */
+
+/* Film-grain overlay used on dark sections */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Outlined display text (footer watermark, section ghosts) */
+.text-outline {
+  -webkit-text-stroke: 1px rgba(237, 237, 230, 0.14);
+  color: transparent;
+}
+
+.text-outline-lime {
+  -webkit-text-stroke: 1.5px rgba(201, 247, 58, 0.4);
+  color: transparent;
+}
+
+/* Infinite marquee */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee-slow {
+  animation: marquee 46s linear infinite;
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+/* Slow spin for decorative badges */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+
+/* Scroll cue */
+@keyframes scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 0.4;
+  }
+}
+
+.animate-scroll-cue {
+  animation: scroll-cue 1.8s ease-in-out infinite;
+}
+
+/* Soft float for decorative chips */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.animate-float-soft {
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+/* Live pulse dot */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 247, 58, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(201, 247, 58, 0);
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee,
+  .animate-marquee-slow,
+  .animate-spin-slow,
+  .animate-scroll-cue,
+  .animate-float-soft,
+  .animate-pulse-dot {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }
