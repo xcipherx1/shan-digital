@@ -32,16 +32,18 @@ export async function POST(req: Request) {
   }
 
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  // Falls back to Resend's shared sender, which needs no domain
+  // verification — so the form works as soon as an API key is set.
+  const from =
+    process.env.RESEND_FROM_EMAIL ??
+    "Shan Digital Marketing <onboarding@resend.dev>";
   const to = process.env.LEAD_NOTIFICATION_EMAIL ?? site.email;
 
-  if (!apiKey || !from) {
-    console.error(
-      "[lead] RESEND_API_KEY or RESEND_FROM_EMAIL is not configured.",
-    );
+  if (!apiKey) {
+    console.error("[lead] RESEND_API_KEY is not configured.");
     return NextResponse.json(
       {
-        message: `Our email service is temporarily unavailable. Please email us directly at ${site.email}.`,
+        message: `Our email service isn't configured yet. Please email us directly at ${site.email}.`,
       },
       { status: 503 },
     );
@@ -66,6 +68,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         message: `We couldn't process your request right now. Please email us directly at ${site.email}.`,
+        // Surface the real Resend error during development only.
+        ...(process.env.NODE_ENV !== "production"
+          ? { detail: error.message }
+          : {}),
       },
       { status: 502 },
     );

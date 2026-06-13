@@ -38,7 +38,31 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Lenis (and its JS anchor handler) own smooth scrolling now.
+     Native smooth-scroll fights Lenis frame-by-frame, so keep it auto. */
+  scroll-behavior: auto;
+}
+
+/* ── Lenis smooth scroll ───────────────────────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 body {

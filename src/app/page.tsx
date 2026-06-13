@@ -1,3 +1,4 @@
+import SmoothScroll from "@/components/providers/SmoothScroll";
 import Preloader from "@/components/ui/Preloader";
 import CustomCursor from "@/components/ui/CustomCursor";
 import Navbar from "@/components/sections/Navbar";
@@ -20,6 +21,7 @@ import Footer from "@/components/sections/Footer";
 export default function Home() {
   return (
     <>
+      <SmoothScroll />
       <Preloader />
       <CustomCursor />
       <Navbar />
