@@ -6,6 +6,25 @@ import { site } from "@/config/site";
 
 export const runtime = "nodejs";
 
+/**
+ * TEMPORARY diagnostic — visit /api/lead in a browser to see which
+ * expected env var names exist in this deployment (presence only, never
+ * values). Remove this GET handler once the lead form is confirmed working.
+ */
+export async function GET() {
+  return NextResponse.json({
+    expectedVarsPresent: {
+      RESEND_API_KEY: Boolean(process.env.RESEND_API_KEY),
+      RESEND_FROM_EMAIL: Boolean(process.env.RESEND_FROM_EMAIL),
+      LEAD_NOTIFICATION_EMAIL: Boolean(process.env.LEAD_NOTIFICATION_EMAIL),
+    },
+    // Names (not values) of any env vars that look related — reveals typos
+    relatedVarNames: Object.keys(process.env).filter((k) =>
+      /resend|notification|from_email|email_notif|lead/i.test(k),
+    ),
+  });
+}
+
 export async function POST(req: Request) {
   let json: unknown;
   try {
