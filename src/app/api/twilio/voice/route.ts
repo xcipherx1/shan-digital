@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { validateDialTarget } from "@/lib/dial-validation";
 import {
   readTwilioForm,
-  validateTwilioSignature,
+  validateTwilioWebhook,
   webhookUrl,
   userIdFromIdentity,
 } from "@/lib/twilio";
@@ -33,11 +33,9 @@ function startOfUtcDay(): Date {
 
 export async function POST(req: Request) {
   const params = await readTwilioForm(req);
-  const signature = req.headers.get("X-Twilio-Signature");
-  const url = webhookUrl("/api/twilio/voice");
 
   // Mandatory: reject anything not signed by Twilio.
-  if (!validateTwilioSignature(signature, url, params)) {
+  if (!validateTwilioWebhook(req, "/api/twilio/voice", params)) {
     return new Response("Forbidden", { status: 403 });
   }
 

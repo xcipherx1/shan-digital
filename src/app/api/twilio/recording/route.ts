@@ -1,9 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import {
-  readTwilioForm,
-  validateTwilioSignature,
-  webhookUrl,
-} from "@/lib/twilio";
+import { readTwilioForm, validateTwilioWebhook } from "@/lib/twilio";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,15 +11,8 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: Request) {
   const params = await readTwilioForm(req);
-  const signature = req.headers.get("X-Twilio-Signature");
 
-  if (
-    !validateTwilioSignature(
-      signature,
-      webhookUrl("/api/twilio/recording"),
-      params,
-    )
-  ) {
+  if (!validateTwilioWebhook(req, "/api/twilio/recording", params)) {
     return new Response("Forbidden", { status: 403 });
   }
 

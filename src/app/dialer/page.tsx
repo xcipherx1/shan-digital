@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import Dialer from "@/components/dialer/Dialer";
+import AutoRefresh from "@/components/dialer/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export default async function DialerPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+      <AutoRefresh intervalMs={5000} />
       <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="font-label text-[11px] uppercase tracking-[0.25em] text-lime">

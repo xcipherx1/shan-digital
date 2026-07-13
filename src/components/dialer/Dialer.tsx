@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Device, Call } from "@twilio/voice-sdk";
 import {
   Phone,
@@ -65,6 +66,7 @@ export default function Dialer({
   const [seconds, setSeconds] = useState(0);
   const [recording, setRecording] = useState(initialRecording);
   const [dispoFor, setDispoFor] = useState<string | null>(null);
+  const router = useRouter();
 
   const deviceRef = useRef<Device | null>(null);
   const callRef = useRef<Call | null>(null);
@@ -122,8 +124,12 @@ export default function Dialer({
       setMuted(false);
       setStatus(deviceRef.current ? "ready" : "offline");
       if (promptDisposition && sid) setDispoFor(sid);
+      // Pull fresh today-stats; the status webhook lags a beat, so
+      // refresh again shortly after.
+      router.refresh();
+      setTimeout(() => router.refresh(), 4000);
     },
-    [stopTick],
+    [stopTick, router],
   );
 
   const attachCall = useCallback(
@@ -493,6 +499,7 @@ function DispositionModal({
   const [disposition, setDisposition] = useState<Disposition | null>(null);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
 
   async function save() {
     setSaving(true);
@@ -502,6 +509,7 @@ function DispositionModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ disposition, notes: notes || null }),
       });
+      router.refresh();
     } finally {
       setSaving(false);
       onClose();

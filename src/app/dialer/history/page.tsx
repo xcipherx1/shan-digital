@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { buildCallWhere, normaliseFilters } from "@/lib/call-query";
 import HistoryFilters from "@/components/dialer/HistoryFilters";
+import AutoRefresh from "@/components/dialer/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,10 @@ export default async function HistoryPage({
 
   const page = Math.max(1, parseInt(get("page") ?? "1", 10) || 1);
 
-  const [total, calls] = await Promise.all([
+  const startToday = new Date();
+  startToday.setUTCHours(0, 0, 0, 0);
+
+  const [total, calls, me, todayCount, todayTalk] = await Promise.all([
     prisma.call.count({ where }),
     prisma.call.findMany({
       where,
@@ -51,7 +55,28 @@ export default async function HistoryPage({
       take: PAGE_SIZE,
       include: { user: { select: { name: true } } },
     }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { dailyCallLimit: true },
+    }),
+    prisma.call.count({
+      where: { userId: session.user.id, createdAt: { gte: startToday } },
+    }),
+    prisma.call.aggregate({
+      _sum: { durationSeconds: true },
+      where: { userId: session.user.id, createdAt: { gte: startToday } },
+    }),
   ]);
+
+  const talkSeconds = todayTalk._sum.durationSeconds ?? 0;
+  const todayStats = [
+    { label: "Calls today", value: String(todayCount) },
+    { label: "Talk time", value: fmtDuration(talkSeconds) === "—" ? "0s" : fmtDuration(talkSeconds) },
+    {
+      label: "Remaining today",
+      value: String(Math.max(0, (me?.dailyCallLimit ?? 200) - todayCount)),
+    },
+  ];
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -67,16 +92,34 @@ export default async function HistoryPage({
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
-      <div className="mb-8">
-        <p className="font-label text-[11px] uppercase tracking-[0.25em] text-lime">
-          Call history
-        </p>
-        <h1 className="font-display mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-          {isAdmin ? "All calls" : "Your calls"}
-        </h1>
-        <p className="mt-2 text-sm text-muted">
-          {total} call{total === 1 ? "" : "s"} recorded.
-        </p>
+      <AutoRefresh intervalMs={5000} />
+      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="font-label text-[11px] uppercase tracking-[0.25em] text-lime">
+            Call history
+          </p>
+          <h1 className="font-display mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+            {isAdmin ? "All calls" : "Your calls"}
+          </h1>
+          <p className="mt-2 text-sm text-muted">
+            {total} call{total === 1 ? "" : "s"} recorded · updates live
+          </p>
+        </div>
+        <dl className="grid grid-cols-3 gap-3 sm:gap-4">
+          {todayStats.map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl border border-line bg-ink-2 px-4 py-3 text-center"
+            >
+              <dd className="font-display text-xl font-bold text-lime sm:text-2xl">
+                {s.value}
+              </dd>
+              <dt className="mt-0.5 font-label text-[10px] uppercase tracking-wider text-muted">
+                {s.label}
+              </dt>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <HistoryFilters initial={filters} />

@@ -13,22 +13,61 @@ export function webhookUrl(path: string): string {
 }
 
 /**
- * Validate an incoming Twilio webhook signature against the raw POST
- * params and the exact public URL. Without this, anyone who discovers a
- * webhook URL could bill calls to the account.
+ * The exact URL Twilio requested, reconstructed from the proxy headers
+ * Vercel sets. Twilio signs the URL it was configured with — the URL it
+ * actually hits — so validating against this stays correct even when
+ * PUBLIC_BASE_URL is missing a slash, uses another domain, etc.
  */
-export function validateTwilioSignature(
-  signature: string | null,
-  url: string,
+export function requestedUrl(req: Request): string {
+  const url = new URL(req.url);
+  const proto =
+    req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+    url.protocol.replace(":", "");
+  const host =
+    req.headers.get("x-forwarded-host")?.split(",")[0]?.trim() ||
+    req.headers.get("host") ||
+    url.host;
+  return `${proto}://${host}${url.pathname}${url.search}`;
+}
+
+/**
+ * Validate an incoming Twilio webhook signature against the raw POST
+ * params. Without this, anyone who discovers a webhook URL could bill
+ * calls to the account. Tries the URL Twilio actually requested first,
+ * then the env-configured URL, and logs loudly on failure so a
+ * misconfiguration shows up in Vercel logs instead of failing silently.
+ */
+export function validateTwilioWebhook(
+  req: Request,
+  path: string,
   params: Record<string, string>,
 ): boolean {
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  if (!authToken || !signature) return false;
-  try {
-    return twilio.validateRequest(authToken, signature, url, params);
-  } catch {
+  const signature = req.headers.get("X-Twilio-Signature");
+  if (!authToken || !signature) {
+    console.error(
+      `[twilio] ${path}: missing ${authToken ? "signature header" : "TWILIO_AUTH_TOKEN"}.`,
+    );
     return false;
   }
+
+  const candidates = [...new Set([requestedUrl(req), webhookUrl(path)])];
+  for (const url of candidates) {
+    try {
+      if (twilio.validateRequest(authToken, signature, url, params)) {
+        return true;
+      }
+    } catch {
+      // fall through to the next candidate
+    }
+  }
+
+  console.error(
+    `[twilio] ${path}: signature validation failed. Tried URLs: ${candidates.join(
+      ", ",
+    )}. Check that the TwiML App / status callback URLs match the deployed domain and that TWILIO_AUTH_TOKEN is correct.`,
+  );
+  return false;
 }
 
 /** Parse a Twilio form-encoded webhook body into a plain params object. */
