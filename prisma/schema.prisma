@@ -1,0 +1,70 @@
+// Prisma schema for the Shan Digital secure browser dialer.
+// Docs: run `npx prisma migrate dev` after setting DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  agent
+  admin
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  passwordHash   String
+  role           Role      @default(agent)
+  isActive       Boolean   @default(true)
+  dailyCallLimit Int       @default(200)
+  recordingEnabled Boolean @default(true)
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  calls Call[]
+}
+
+model Call {
+  id              String    @id @default(cuid())
+  callSid         String    @unique
+  parentCallSid   String?
+  userId          String
+  direction       String    @default("outbound")
+  fromNumber      String
+  toNumber        String
+  status          String    @default("initiated")
+  startedAt       DateTime?
+  endedAt         DateTime?
+  durationSeconds Int?
+  priceUsd        Decimal?  @db.Decimal(10, 4)
+  recordingUrl    String?
+  recordingSid    String?
+  disposition     String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([parentCallSid])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
