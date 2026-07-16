@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { site } from "@/config/site";
 import SignOutButton from "@/components/dialer/SignOutButton";
+import IdleLogout from "@/components/dialer/IdleLogout";
 
 export const metadata: Metadata = {
   title: "Dialer",
@@ -18,6 +19,7 @@ export default async function DialerLayout({
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-mist">
+      {session?.user && <IdleLogout />}
       {session?.user && (
         <header className="sticky top-0 z-40 border-b border-line bg-ink/85 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">

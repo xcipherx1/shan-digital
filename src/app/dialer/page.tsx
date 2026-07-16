@@ -51,27 +51,27 @@ export default async function DialerPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-14">
       <AutoRefresh intervalMs={5000} />
-      <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div className="mb-5 flex flex-col gap-4 sm:mb-8 sm:gap-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="font-label text-[11px] uppercase tracking-[0.25em] text-lime">
             Browser dialer
           </p>
-          <h1 className="font-display mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+          <h1 className="font-display mt-1.5 text-2xl font-extrabold tracking-tight sm:mt-2 sm:text-4xl">
             Make a call
           </h1>
         </div>
-        <dl className="grid grid-cols-3 gap-3 sm:gap-4">
+        <dl className="grid grid-cols-3 gap-2 sm:gap-4">
           {stats.map((s) => (
             <div
               key={s.label}
-              className="rounded-2xl border border-line bg-ink-2 px-4 py-3 text-center"
+              className="rounded-2xl border border-line bg-ink-2 px-2.5 py-2.5 text-center sm:px-4 sm:py-3"
             >
-              <dd className="font-display text-xl font-bold text-lime sm:text-2xl">
+              <dd className="font-display text-lg font-bold text-lime sm:text-2xl">
                 {s.value}
               </dd>
-              <dt className="mt-0.5 font-label text-[10px] uppercase tracking-wider text-muted">
+              <dt className="mt-0.5 font-label text-[9px] uppercase tracking-wider text-muted sm:text-[10px]">
                 {s.label}
               </dt>
             </div>

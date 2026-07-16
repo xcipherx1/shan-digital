@@ -12,10 +12,13 @@ import {
   Circle,
   ShieldAlert,
   LoaderCircle,
+  Volume2,
+  Grid3x3,
 } from "lucide-react";
 import { DISPOSITIONS, type Disposition } from "@/lib/dispositions";
 
 type Status = "offline" | "connecting" | "ready" | "oncall" | "error";
+type Phase = "idle" | "dialing" | "ringing" | "active";
 
 const KEYS = [
   ["1", ""],
@@ -40,6 +43,12 @@ const STATUS_META: Record<Status, { label: string; dot: string; text: string }> 
   error: { label: "Error", dot: "bg-red-400", text: "text-red-400" },
 };
 
+const PHASE_META: Record<Exclude<Phase, "idle">, { label: string; ring: string }> = {
+  dialing: { label: "Calling", ring: "border-amber-400/60 text-amber-300" },
+  ringing: { label: "Ringing", ring: "border-amber-400/60 text-amber-300" },
+  active: { label: "Connected", ring: "border-teal/60 text-teal" },
+};
+
 function looksValidUk(n: string): boolean {
   return /^\+44\d{7,12}$/.test(n);
 }
@@ -58,15 +67,20 @@ export default function Dialer({
   recordingEnabled: boolean;
 }) {
   const [status, setStatus] = useState<Status>("offline");
+  const [phase, setPhase] = useState<Phase>("idle");
   const [number, setNumber] = useState("+44");
   const [errorMsg, setErrorMsg] = useState("");
   const [fatalError, setFatalError] = useState("");
-  const [onCall, setOnCall] = useState(false);
   const [muted, setMuted] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [recording, setRecording] = useState(initialRecording);
   const [dispoFor, setDispoFor] = useState<string | null>(null);
+  const [speakerAvailable, setSpeakerAvailable] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(false);
+  const [showDtmf, setShowDtmf] = useState(false);
   const router = useRouter();
+
+  const onCall = phase !== "idle";
 
   const deviceRef = useRef<Device | null>(null);
   const callRef = useRef<Call | null>(null);
@@ -120,8 +134,9 @@ export default function Dialer({
       stopTick();
       const sid = callSidRef.current;
       callRef.current = null;
-      setOnCall(false);
+      setPhase("idle");
       setMuted(false);
+      setShowDtmf(false);
       setStatus(deviceRef.current ? "ready" : "offline");
       if (promptDisposition && sid) setDispoFor(sid);
       // Pull fresh today-stats; the status webhook lags a beat, so
@@ -136,7 +151,7 @@ export default function Dialer({
     (call: Call) => {
       callRef.current = call;
       callSidRef.current = null;
-      setOnCall(true);
+      setPhase("dialing");
       setStatus("oncall");
       setSeconds(0);
 
@@ -145,9 +160,13 @@ export default function Dialer({
         if (sid) callSidRef.current = sid;
       };
 
-      call.on("ringing", capture);
+      call.on("ringing", () => {
+        capture();
+        setPhase("ringing");
+      });
       call.on("accept", () => {
         capture();
+        setPhase("active");
         stopTick();
         setSeconds(0);
         tickTimer.current = setInterval(() => setSeconds((s) => s + 1), 1000);
@@ -202,7 +221,14 @@ export default function Dialer({
         deviceRef.current = device;
         scheduleRefresh(data.expiresAt);
 
-        device.on("registered", () => setStatus("ready"));
+        device.on("registered", () => {
+          setStatus("ready");
+          // Speaker routing is only possible where the browser supports
+          // output selection (desktop Chrome/Edge, Android Chrome).
+          setSpeakerAvailable(
+            Boolean(device.audio?.isOutputSelectionSupported),
+          );
+        });
         device.on("unregistered", () => setStatus("offline"));
         device.on("error", (e: { message?: string }) => {
           setStatus("error");
@@ -250,6 +276,16 @@ export default function Dialer({
     return () => window.removeEventListener("beforeunload", handler);
   }, [onCall]);
 
+  // An active call counts as activity for the idle-logout timer, even
+  // if the agent doesn't touch anything for the whole conversation.
+  useEffect(() => {
+    if (!onCall) return;
+    const ping = () => window.dispatchEvent(new Event("dialer:activity"));
+    ping();
+    const id = setInterval(ping, 30_000);
+    return () => clearInterval(id);
+  }, [onCall]);
+
   const placeCall = useCallback(async () => {
     const device = deviceRef.current;
     if (!device || status !== "ready") return;
@@ -277,6 +313,27 @@ export default function Dialer({
     call.mute(next);
     setMuted(next);
   }, [muted]);
+
+  const toggleSpeaker = useCallback(async () => {
+    const audio = deviceRef.current?.audio;
+    if (!audio) return;
+    const next = !speakerOn;
+    try {
+      if (next) {
+        // Prefer an output that identifies as a speaker (phones expose
+        // "Speakerphone"); otherwise fall back to the default device.
+        const outputs = Array.from(audio.availableOutputDevices.values());
+        const speaker =
+          outputs.find((d) => /speaker/i.test(d.label))?.deviceId ?? "default";
+        await audio.speakerDevices.set(speaker);
+      } else {
+        await audio.speakerDevices.set("default");
+      }
+      setSpeakerOn(next);
+    } catch {
+      setErrorMsg("Speaker switching isn't available on this device.");
+    }
+  }, [speakerOn]);
 
   const pressKey = useCallback(
     (key: string) => {
@@ -340,12 +397,34 @@ export default function Dialer({
     );
   }
 
+  const keypad = (
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {KEYS.map(([digit, letters]) => (
+        <button
+          key={digit}
+          type="button"
+          onClick={() => pressKey(digit)}
+          className="group flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-2xl border border-line bg-ink py-2.5 transition-colors duration-150 hover:border-lime/40 hover:bg-ink-3 active:scale-[0.97] sm:min-h-16"
+        >
+          <span className="font-display text-xl font-bold text-mist sm:text-2xl">
+            {digit}
+          </span>
+          {letters && (
+            <span className="font-label text-[9px] tracking-[0.2em] text-muted">
+              {letters}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="mx-auto w-full max-w-md">
       {/* Status + recording */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between sm:mb-6">
         <span
-          className={`inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-1.5 font-label text-xs uppercase tracking-wider ${meta.text}`}
+          className={`inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 font-label text-[11px] uppercase tracking-wider sm:px-3.5 sm:text-xs ${meta.text}`}
         >
           {status === "connecting" ? (
             <LoaderCircle className="size-3 animate-spin" aria-hidden />
@@ -358,7 +437,7 @@ export default function Dialer({
         <button
           type="button"
           onClick={toggleRecording}
-          className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-1.5 font-label text-xs uppercase tracking-wider transition-colors duration-200 ${
+          className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 font-label text-[11px] uppercase tracking-wider transition-colors duration-200 sm:px-3.5 sm:text-xs ${
             recording
               ? "border-red-400/40 text-red-300"
               : "border-line text-muted hover:text-mist"
@@ -374,79 +453,118 @@ export default function Dialer({
         </button>
       </div>
 
-      {/* Number display */}
-      <div className="rounded-3xl border border-line bg-ink-2 p-6 sm:p-8">
-        <div className="flex items-center justify-between gap-3">
-          <input
-            aria-label="Phone number"
-            value={number}
-            inputMode="tel"
-            onChange={(e) =>
-              setNumber(e.target.value.replace(/[^\d+*#]/g, ""))
-            }
-            className="w-full bg-transparent font-display text-3xl font-bold tracking-tight text-mist outline-none placeholder:text-muted/40 sm:text-4xl"
-            placeholder="+44…"
-          />
-          {!onCall && number.length > 3 && (
-            <button
-              type="button"
-              onClick={backspace}
-              className="shrink-0 cursor-pointer rounded-full p-2 text-muted transition-colors hover:text-mist"
-              aria-label="Delete last digit"
-            >
-              <Delete className="size-5" aria-hidden />
-            </button>
-          )}
-        </div>
-
-        {/* Live timer while on a call */}
-        <div className="mt-1 h-5">
-          {onCall && (
-            <span className="font-label text-sm tabular-nums text-teal">
-              {formatTimer(seconds)}
-            </span>
-          )}
-        </div>
-
-        {/* Keypad */}
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          {KEYS.map(([digit, letters]) => (
-            <button
-              key={digit}
-              type="button"
-              onClick={() => pressKey(digit)}
-              className="group flex aspect-[5/4] cursor-pointer flex-col items-center justify-center rounded-2xl border border-line bg-ink transition-colors duration-150 hover:border-lime/40 hover:bg-ink-3 active:scale-[0.97]"
-            >
-              <span className="font-display text-2xl font-bold text-mist">
-                {digit}
-              </span>
-              {letters && (
-                <span className="font-label text-[9px] tracking-[0.2em] text-muted">
-                  {letters}
-                </span>
+      <div className="rounded-3xl border border-line bg-ink-2 p-4 sm:p-7">
+        {!onCall ? (
+          <>
+            {/* ── Idle: number entry + keypad ── */}
+            <div className="flex items-center justify-between gap-3">
+              <input
+                aria-label="Phone number"
+                value={number}
+                inputMode="tel"
+                onChange={(e) =>
+                  setNumber(e.target.value.replace(/[^\d+*#]/g, ""))
+                }
+                className="w-full bg-transparent font-display text-2xl font-bold tracking-tight text-mist outline-none placeholder:text-muted/40 sm:text-4xl"
+                placeholder="+44…"
+              />
+              {number.length > 3 && (
+                <button
+                  type="button"
+                  onClick={backspace}
+                  className="shrink-0 cursor-pointer rounded-full p-2 text-muted transition-colors hover:text-mist"
+                  aria-label="Delete last digit"
+                >
+                  <Delete className="size-5" aria-hidden />
+                </button>
               )}
-            </button>
-          ))}
-        </div>
+            </div>
 
-        {errorMsg && (
-          <p role="alert" className="mt-4 text-center text-sm text-red-300">
-            {errorMsg}
-          </p>
-        )}
+            <div className="mt-4 sm:mt-5">{keypad}</div>
 
-        {/* Call controls */}
-        <div className="mt-6 flex items-center justify-center gap-4">
-          {onCall ? (
-            <>
+            {errorMsg && (
+              <p role="alert" className="mt-4 text-center text-sm text-red-300">
+                {errorMsg}
+              </p>
+            )}
+
+            <div className="mt-5 flex items-center justify-center sm:mt-6">
+              <button
+                type="button"
+                onClick={placeCall}
+                disabled={!canCall}
+                className="flex h-14 w-full max-w-56 cursor-pointer items-center justify-center gap-2.5 rounded-full bg-lime font-display text-base font-bold text-coal transition-colors duration-200 hover:bg-lime-deep disabled:cursor-not-allowed disabled:opacity-40 sm:h-16"
+                aria-label="Call"
+              >
+                <Phone className="size-5" aria-hidden />
+                Call
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* ── Live call panel ── */}
+            <div className="flex flex-col items-center pb-1 pt-4 text-center sm:pt-6">
+              <div className="relative flex size-20 items-center justify-center sm:size-24">
+                {phase !== "active" && (
+                  <span
+                    className="absolute inset-0 animate-ping rounded-full bg-amber-400/20"
+                    aria-hidden
+                  />
+                )}
+                <span
+                  className={`relative flex size-16 items-center justify-center rounded-full border-2 bg-ink sm:size-20 ${PHASE_META[phase as Exclude<Phase, "idle">].ring}`}
+                >
+                  <Phone className="size-6 sm:size-7" aria-hidden />
+                </span>
+              </div>
+
+              <p className="font-display mt-4 break-all text-2xl font-bold tracking-tight text-mist sm:text-3xl">
+                {number}
+              </p>
+              <p
+                className="mt-1.5 font-label text-sm uppercase tracking-[0.2em] text-muted"
+                role="status"
+                aria-live="polite"
+              >
+                {phase === "active" ? (
+                  <span className="tabular-nums text-teal">
+                    {formatTimer(seconds)}
+                  </span>
+                ) : (
+                  <span className="text-amber-300">
+                    {PHASE_META[phase as Exclude<Phase, "idle">].label}
+                    <AnimatedDots />
+                  </span>
+                )}
+              </p>
+              {recording && phase === "active" && (
+                <p className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-red-300">
+                  <Circle className="size-2.5 fill-red-400 text-red-400" aria-hidden />
+                  Recording — remember to inform the caller
+                </p>
+              )}
+            </div>
+
+            {showDtmf && <div className="mt-4">{keypad}</div>}
+
+            {errorMsg && (
+              <p role="alert" className="mt-4 text-center text-sm text-red-300">
+                {errorMsg}
+              </p>
+            )}
+
+            {/* In-call controls */}
+            <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={toggleMute}
-                className={`flex size-14 cursor-pointer items-center justify-center rounded-full border transition-colors duration-200 ${
+                className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-200 ${
                   muted
                     ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
                     : "border-line text-muted hover:text-mist"
                 }`}
+                aria-pressed={muted}
                 aria-label={muted ? "Unmute" : "Mute"}
               >
                 {muted ? (
@@ -454,29 +572,63 @@ export default function Dialer({
                 ) : (
                   <Mic className="size-5" aria-hidden />
                 )}
+                <span className="font-label text-[10px] uppercase tracking-wider">
+                  {muted ? "Muted" : "Mute"}
+                </span>
               </button>
+
               <button
                 type="button"
-                onClick={hangup}
-                className="flex size-16 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white transition-colors duration-200 hover:bg-red-600"
-                aria-label="Hang up"
+                onClick={toggleSpeaker}
+                disabled={!speakerAvailable}
+                title={
+                  speakerAvailable
+                    ? "Toggle speakerphone"
+                    : "Speaker switching isn't supported by this browser — use your device's own audio controls."
+                }
+                className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
+                  speakerOn
+                    ? "border-lime/50 bg-lime/10 text-lime"
+                    : "border-line text-muted hover:text-mist"
+                }`}
+                aria-pressed={speakerOn}
+                aria-label={speakerOn ? "Speaker off" : "Speaker on"}
               >
-                <PhoneOff className="size-6" aria-hidden />
+                <Volume2 className="size-5" aria-hidden />
+                <span className="font-label text-[10px] uppercase tracking-wider">
+                  Speaker
+                </span>
               </button>
-              <span className="size-14" aria-hidden />
-            </>
-          ) : (
+
+              <button
+                type="button"
+                onClick={() => setShowDtmf((v) => !v)}
+                className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border transition-colors duration-200 ${
+                  showDtmf
+                    ? "border-teal/50 bg-teal/10 text-teal"
+                    : "border-line text-muted hover:text-mist"
+                }`}
+                aria-pressed={showDtmf}
+                aria-label={showDtmf ? "Hide keypad" : "Show keypad"}
+              >
+                <Grid3x3 className="size-5" aria-hidden />
+                <span className="font-label text-[10px] uppercase tracking-wider">
+                  Keypad
+                </span>
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={placeCall}
-              disabled={!canCall}
-              className="flex size-16 cursor-pointer items-center justify-center rounded-full bg-lime text-coal transition-colors duration-200 hover:bg-lime-deep disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Call"
+              onClick={hangup}
+              className="mt-3 flex min-h-14 w-full cursor-pointer items-center justify-center gap-2.5 rounded-full bg-red-500 font-display text-base font-bold text-white transition-colors duration-200 hover:bg-red-600 sm:mt-4"
+              aria-label="Hang up"
             >
-              <Phone className="size-6" aria-hidden />
+              <PhoneOff className="size-5" aria-hidden />
+              {phase === "active" ? "End call" : "Cancel"}
             </button>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {dispoFor && (
@@ -486,6 +638,23 @@ export default function Dialer({
         />
       )}
     </div>
+  );
+}
+
+/** Three dots that pulse in sequence while dialing/ringing. */
+function AnimatedDots() {
+  return (
+    <span aria-hidden>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="inline-block animate-pulse"
+          style={{ animationDelay: `${i * 280}ms` }}
+        >
+          .
+        </span>
+      ))}
+    </span>
   );
 }
 

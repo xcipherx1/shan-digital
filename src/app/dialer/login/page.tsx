@@ -6,10 +6,10 @@ import LoginForm from "@/components/dialer/LoginForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; timeout?: string }>;
 }) {
   const session = await auth();
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, timeout } = await searchParams;
 
   if (session?.user) {
     redirect(callbackUrl && callbackUrl.startsWith("/dialer") ? callbackUrl : "/dialer");
@@ -42,6 +42,15 @@ export default async function LoginPage({
           <p className="mt-1.5 text-sm text-muted">
             Access is restricted to registered agents.
           </p>
+          {timeout === "1" && (
+            <p
+              role="status"
+              className="mt-4 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-300"
+            >
+              You were signed out after an hour of inactivity. Sign in
+              again to continue.
+            </p>
+          )}
           <LoginForm
             callbackUrl={
               callbackUrl && callbackUrl.startsWith("/dialer")

@@ -13,7 +13,11 @@ export const authConfig = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8 hours
+    // Rolling 1-hour window: the cookie is re-issued on activity, so an
+    // active agent stays signed in, but any session left idle for an
+    // hour expires server-side. A client idle-timer (IdleLogout) also
+    // signs out open tabs after 60 minutes without interaction.
+    maxAge: 60 * 60,
   },
   providers: [],
 } satisfies NextAuthConfig;
