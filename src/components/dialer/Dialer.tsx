@@ -221,6 +221,18 @@ export default function Dialer({
         deviceRef.current = device;
         scheduleRefresh(data.expiresAt);
 
+        // Clean up the agent's microphone: browser-level noise
+        // suppression, echo cancellation and automatic gain control.
+        device.audio
+          ?.setAudioConstraints({
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          })
+          .catch(() => {
+            /* an unsupported constraint combo is non-fatal */
+          });
+
         device.on("registered", () => {
           setStatus("ready");
           // Speaker routing is only possible where the browser supports
