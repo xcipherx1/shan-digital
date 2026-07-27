@@ -14,7 +14,8 @@ export default auth((req) => {
   const isApi =
     path.startsWith("/api/dialer") || path === "/api/twilio/token";
   const isProtectedPage =
-    path.startsWith("/dialer") && path !== "/dialer/login";
+    (path.startsWith("/dialer") && path !== "/dialer/login") ||
+    path.startsWith("/dashboard");
 
   if ((isApi || isProtectedPage) && !isLoggedIn) {
     if (isApi) {
@@ -32,5 +33,10 @@ export default auth((req) => {
 // deliberately excluded — they authenticate via signature validation,
 // not a session, because Twilio cannot log in.
 export const config = {
-  matcher: ["/dialer/:path*", "/api/dialer/:path*", "/api/twilio/token"],
+  matcher: [
+    "/dialer/:path*",
+    "/dashboard/:path*",
+    "/api/dialer/:path*",
+    "/api/twilio/token",
+  ],
 };

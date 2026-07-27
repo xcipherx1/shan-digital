@@ -11,8 +11,14 @@ export default async function LoginPage({
   const session = await auth();
   const { callbackUrl, timeout } = await searchParams;
 
+  const safeCallback =
+    callbackUrl &&
+    (callbackUrl.startsWith("/dialer") || callbackUrl.startsWith("/dashboard"))
+      ? callbackUrl
+      : "/dialer";
+
   if (session?.user) {
-    redirect(callbackUrl && callbackUrl.startsWith("/dialer") ? callbackUrl : "/dialer");
+    redirect(safeCallback);
   }
 
   return (
@@ -51,13 +57,7 @@ export default async function LoginPage({
               again to continue.
             </p>
           )}
-          <LoginForm
-            callbackUrl={
-              callbackUrl && callbackUrl.startsWith("/dialer")
-                ? callbackUrl
-                : "/dialer"
-            }
-          />
+          <LoginForm callbackUrl={safeCallback} />
         </div>
       </div>
     </div>
