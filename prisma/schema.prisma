@@ -68,3 +68,46 @@ model LoginAttempt {
   @@index([email, createdAt])
   @@index([ip, createdAt])
 }
+
+/// Roofing-funnel lead captured on /landing. Contact details arrive at
+/// Stage 1 (record created immediately so drop-offs are never lost);
+/// booking fields fill in at Stage 2.
+model Lead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Contact (Stage 1)
+  fullName     String?
+  businessName String?
+  email        String?
+  phone        String?
+  city         String?
+
+  // Offer + qualification
+  selectedOffer String?
+  answers       Json    @default("{}")
+  painPoint     String?
+
+  // Meeting (Stage 2)
+  meetingBooked Boolean   @default(false)
+  meetingTime   DateTime?
+  meetingRef    String?
+
+  // Pipeline: new | contacted | booked | won | lost
+  status String @default("new")
+
+  // Attribution (Meta Ads ROI)
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
+  fbclid      String?
+
+  ip        String?
+  userAgent String?
+
+  @@index([createdAt])
+  @@index([status])
+}
