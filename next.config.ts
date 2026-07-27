@@ -22,6 +22,23 @@ const dialerCsp = [
   "form-action 'self'",
 ].join("; ");
 
+/**
+ * CSP for the /landing funnel: allows the optional Meta Pixel script
+ * and an embedded Cal.com/Calendly booking iframe — nothing else.
+ */
+const landingCsp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://connect.facebook.net`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://www.facebook.com",
+  "font-src 'self' data:",
+  "connect-src 'self' https://www.facebook.com https://connect.facebook.net",
+  "frame-src https://cal.com https://*.cal.com https://calendly.com https://*.calendly.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
 const baseSecurityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -42,6 +59,22 @@ const nextConfig: NextConfig = {
         headers: [
           ...baseSecurityHeaders,
           { key: "Content-Security-Policy", value: dialerCsp },
+        ],
+      },
+      // Admin leads dashboard shares the strict dialer policy.
+      {
+        source: "/dashboard/:path*",
+        headers: [
+          ...baseSecurityHeaders,
+          { key: "Content-Security-Policy", value: dialerCsp },
+        ],
+      },
+      // Funnel page: pixel + booking embed allowed, everything else locked.
+      {
+        source: "/landing",
+        headers: [
+          ...baseSecurityHeaders,
+          { key: "Content-Security-Policy", value: landingCsp },
         ],
       },
     ];
