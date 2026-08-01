@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, Space_Grotesk, Newsreader } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { site, faqs } from "@/config/site";
 import "./globals.css";
 
@@ -109,6 +110,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
         {children}
+        <Analytics />
       </body>
     </html>
   );
