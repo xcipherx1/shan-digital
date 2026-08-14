@@ -21,16 +21,16 @@ export const site = {
   founded: 2019,
   address: {
     street: "7 Salcombe Road",
-    postcode: "BS6 1AH",
+    postcode: "BS4 1AH",
     city: "Bristol",
     country: "United Kingdom",
-    mapUrl: "https://maps.google.com/?q=7+Salcombe+Road+Bristol+BS6+1AH",
+    mapUrl: "https://maps.app.goo.gl/rfUUcCCTFzkB15bP6",
   },
   social: {
-    linkedin: "https://www.linkedin.com/company/shan-digital-marketing",
-    instagram: "https://www.instagram.com/shandigitalmarketing",
+    linkedin: "https://www.linkedin.com/in/syedattique-seo/",
+    instagram: "https://www.instagram.com/roofingmarketingagency/",
     x: "https://x.com/shandigital",
-    dribbble: "https://dribbble.com/shandigital",
+    Whatsapp: "tel:+44 7733 236110",
   },
 } as const;
 
