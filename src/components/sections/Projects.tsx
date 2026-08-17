@@ -197,9 +197,22 @@ export default function Projects() {
                       {project.client} · {project.serviceLabel} · {project.year}
                     </p>
                   </div>
-                  <span className="mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-muted transition-all duration-300 group-hover:border-lime group-hover:bg-lime group-hover:text-coal">
-                    <ArrowUpRight className="size-4" aria-hidden />
-                  </span>
+                  {project.url ? (
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Visit ${project.client} (opens in a new tab)`}
+                      className="mt-1 inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-line text-muted transition-all duration-300 group-hover:border-lime group-hover:bg-lime group-hover:text-coal"
+                    >
+                      <ArrowUpRight className="size-4" aria-hidden />
+                    </a>
+                  ) : (
+                    <span className="mt-1 inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-muted transition-all duration-300 group-hover:border-lime group-hover:bg-lime group-hover:text-coal">
+                      <ArrowUpRight className="size-4" aria-hidden />
+                    </span>
+                  )}
                 </div>
 
                 <p className="mt-3 text-sm leading-relaxed text-muted">

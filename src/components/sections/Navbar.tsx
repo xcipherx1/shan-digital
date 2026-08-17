@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowUpRight, Mail, Phone } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { nav, site } from "@/config/site";
 
@@ -42,8 +42,31 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
+      {/* Contact bar — visible on every breakpoint, phone tappable */}
+      <div className="border-b border-line/70 bg-ink-2/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-9 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
+          <a
+            href={`tel:${site.phoneHref}`}
+            className="inline-flex shrink-0 items-center gap-1.5 font-label text-[11px] tracking-wide text-muted transition-colors duration-200 hover:text-lime sm:text-xs"
+          >
+            <Phone className="size-3 text-lime sm:size-3.5" aria-hidden />
+            {site.phone}
+          </a>
+          <a
+            href={`mailto:${site.email}`}
+            className="inline-flex min-w-0 items-center gap-1.5 font-label text-[11px] tracking-wide text-muted transition-colors duration-200 hover:text-lime sm:text-xs"
+          >
+            <Mail className="size-3 shrink-0 text-lime sm:size-3.5" aria-hidden />
+            <span className="truncate">{site.email}</span>
+          </a>
+          <span className="hidden shrink-0 font-label text-[11px] tracking-wide text-muted lg:inline">
+            {site.address.city}, UK
+          </span>
+        </div>
+      </div>
+
       <nav
-        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8 md:h-20"
+        className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5 sm:px-8 md:h-16"
         aria-label="Main navigation"
       >
         <a

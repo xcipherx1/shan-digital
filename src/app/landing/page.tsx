@@ -111,7 +111,27 @@ export default async function LandingPage({
       />
 
       {/* Minimal funnel header — no site nav to leak attention */}
-      <header className="border-b border-line">
+      <header className="sticky top-0 z-30 border-b border-line bg-ink/90 backdrop-blur-xl">
+        {/* Contact bar: tapping the phone is often the fastest conversion */}
+        <div className="border-b border-line/70 bg-ink-2/80">
+          <div className="mx-auto flex h-9 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+            <a
+              href={`tel:${site.phoneHref}`}
+              className="inline-flex shrink-0 items-center gap-1.5 font-label text-[11px] tracking-wide text-muted transition-colors hover:text-lime sm:text-xs"
+            >
+              <PhoneCall className="size-3 text-lime sm:size-3.5" aria-hidden />
+              {site.phone}
+            </a>
+            <a
+              href={`mailto:${funnel.email}`}
+              className="inline-flex min-w-0 items-center gap-1.5 font-label text-[11px] tracking-wide text-muted transition-colors hover:text-lime sm:text-xs"
+            >
+              <Mail className="size-3 shrink-0 text-lime sm:size-3.5" aria-hidden />
+              <span className="truncate">{funnel.email}</span>
+            </a>
+          </div>
+        </div>
+
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16 sm:px-6">
           <p className="font-display text-lg font-extrabold tracking-tight">
             Shan<span className="text-lime">.</span>
@@ -165,7 +185,7 @@ export default async function LandingPage({
         </section>
 
         {/* ── 2. QUESTIONNAIRE ── */}
-        <section id="plan" className="scroll-mt-16 px-4 pb-14 sm:px-6">
+        <section id="plan" className="scroll-mt-28 px-4 pb-14 sm:px-6">
           <div className="mx-auto max-w-xl">
             <h2 className="font-display mb-4 text-center text-xl font-extrabold tracking-tight sm:text-2xl">
               Answer 8 quick questions, get your free website plan.

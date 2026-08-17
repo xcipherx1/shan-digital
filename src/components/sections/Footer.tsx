@@ -4,6 +4,7 @@ import {
   Mail,
   MapPin,
   Clock,
+  Phone,
 } from "lucide-react";
 import { nav, services, site } from "@/config/site";
 import LocalTime from "@/components/ui/LocalTime";
@@ -114,6 +115,15 @@ export default function Footer() {
                 >
                   <Mail className="size-4 shrink-0 text-lime" aria-hidden />
                   {site.email}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${site.phoneHref}`}
+                  className="inline-flex items-center gap-2.5 transition-colors duration-200 hover:text-lime"
+                >
+                  <Phone className="size-4 shrink-0 text-lime" aria-hidden />
+                  {site.phone}
                 </a>
               </li>
               <li>

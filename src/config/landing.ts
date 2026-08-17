@@ -20,7 +20,7 @@ export const funnel: {
 } = {
   brand: "Shan Digital Marketing",
   email: "info@shandigitalmarketing.com",
-  phone: "",
+  phone: "+44 7733 236 110",
   bookingUrl: process.env.NEXT_PUBLIC_BOOKING_URL ?? "",
   metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "",
 };

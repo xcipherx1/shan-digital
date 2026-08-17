@@ -11,11 +11,15 @@ export default async function LoginPage({
   const session = await auth();
   const { callbackUrl, timeout } = await searchParams;
 
+  // Default landing spot is the leads workspace: admins stay there, and
+  // the dashboard layout forwards agents to the dialer automatically, so
+  // one target works for both roles. An explicit callback always wins,
+  // and is restricted to same-origin workspace paths.
   const safeCallback =
     callbackUrl &&
     (callbackUrl.startsWith("/dialer") || callbackUrl.startsWith("/dashboard"))
       ? callbackUrl
-      : "/dialer";
+      : "/dashboard";
 
   if (session?.user) {
     redirect(safeCallback);

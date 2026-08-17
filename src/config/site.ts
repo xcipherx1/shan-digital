@@ -10,14 +10,34 @@
  * making public claims.
  */
 
+/**
+ * Canonical origin, in priority order:
+ *  1. NEXT_PUBLIC_SITE_URL — set this to your custom domain in Vercel.
+ *  2. VERCEL_PROJECT_PRODUCTION_URL — the project's production domain
+ *     (your custom domain once assigned), injected by Vercel.
+ *  3. The registered fallback.
+ * This keeps canonical/OG/JSON-LD URLs correct after a domain change
+ * even if the env var hasn't been updated yet.
+ */
+function resolveSiteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/$/, "");
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercel) return `https://${vercel.replace(/^https?:\/\//, "").replace(/\/$/, "")}`;
+  return "https://shandigitalmarketing.com";
+}
+
 export const site = {
   name: "Shan Digital Marketing",
   shortName: "Shan",
   tagline: "Local search, won.",
   description:
     "Shan Digital Marketing builds complete growth systems for SMEs and industries: Local SEO, UI/UX & branding, SaaS development and high-performance websites. Based in Bristol, UK.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://shandigitalmarketing.com",
+  url: resolveSiteUrl(),
   email: "info@shandigitalmarketing.com",
+  phone: "+44 7733 236 110",
+  /** Tel-href form, no spaces. */
+  phoneHref: "+447733236110",
   founded: 2019,
   address: {
     street: "7 Salcombe Road",
@@ -283,6 +303,8 @@ export type Project = {
   service: ServiceKey;
   serviceLabel: string;
   year: string;
+  /** Live site, when the work is publicly visible. */
+  url?: string;
   summary: string;
   /** The minute details a designer would point at. */
   critique: string[];
@@ -292,202 +314,188 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    slug: "whitfield-heating",
-    title: "From page 3 to first call",
-    client: "Whitfield Heating & Plumbing",
+    slug: "roof-king-bristol",
+    title: "3x organic growth for a Bristol roofer",
+    client: "Roof King Bristol",
     service: "seo",
     serviceLabel: "Local SEO",
     year: "2025",
+    url: "https://roofkingbristol.co.uk",
     summary:
-      "Complete local search takeover for a Bristol heating firm: 14 service keywords into the map pack, review velocity up 8x.",
+      "Complete website revamp and local search programme for a roofing contractor: rebuilt architecture, metadata and conversion-focused landing pages, then sustained off-page work month after month.",
     critique: [
-      "Citation graph rebuilt across 62 directories with exact NAP match",
-      "Review schema with service-level granularity",
-      "Suburb-level landing pages, each with unique local proof",
+      "On-page SEO rebuilt across 40+ pages with internal linking across 8 core sections",
+      "15+ directory and authority placements per month for 4 consecutive months",
+      "Crawlability, page speed and content standards fixed to cut indexing friction",
     ],
     results: [
-      { value: "+212%", label: "enquiry calls" },
-      { value: "14", label: "keywords in map pack" },
+      { value: "3x", label: "organic clicks in 6 months" },
+      { value: "30+", label: "enquiries in first 3 months" },
     ],
     palette: { from: "#0e3b32", to: "#2dd4bf", accent: "#c9f73a" },
   },
   {
-    slug: "sharma-dental",
-    title: "A practice that books itself",
-    client: "Sharma Dental Studio",
-    service: "web",
-    serviceLabel: "Web Design & Dev",
-    year: "2025",
-    summary:
-      "Rebuilt a tired template site into a 0.7s-load booking machine. Online bookings up 3.8x in the first quarter.",
-    critique: [
-      "Booking CTA persistent in viewport on every breakpoint",
-      "Typography scale tuned to 1.25 ratio for clinical calm",
-      "Treatment pages structured around question-led search intent",
-    ],
-    results: [
-      { value: "3.8x", label: "online bookings" },
-      { value: "0.7s", label: "load time" },
-    ],
-    palette: { from: "#1c1633", to: "#7c6cf0", accent: "#c9f73a" },
-  },
-  {
-    slug: "davies-portal",
-    title: "Quoting, without the admin",
-    client: "Davies Industrial Supplies",
-    service: "saas",
-    serviceLabel: "SaaS Development",
-    year: "2024",
-    summary:
-      "Custom quoting portal handling 400+ quotes a month: spec, price, approve and invoice without a single spreadsheet.",
-    critique: [
-      "Quote builder reduced from 11 fields to 4 with smart defaults",
-      "Optimistic UI so every action feels instant on site Wi-Fi",
-      "Role-based views: sales, warehouse and director see different truths",
-    ],
-    results: [
-      { value: "15hrs", label: "admin saved weekly" },
-      { value: "+167%", label: "quote requests" },
-    ],
-    palette: { from: "#332014", to: "#f59e0b", accent: "#c9f73a" },
-  },
-  {
-    slug: "bennett-rebrand",
-    title: "A roofer that looks national",
-    client: "Bennett Roofing",
-    service: "brand",
-    serviceLabel: "UI/UX & Branding",
-    year: "2024",
-    summary:
-      "Identity, livery and site for a Gloucester roofing firm. Now mistaken for a national franchise, and priced accordingly.",
-    critique: [
-      "Wordmark cut at 12 degrees to echo a roof pitch: subtle and ownable",
-      "Slate and safety-orange palette tested for van-side legibility at 30mph",
-      "Photography direction: scaffold-level, golden hour, real crew",
-    ],
-    results: [
-      { value: "+38%", label: "avg. job value" },
-      { value: "2.4x", label: "quote acceptance" },
-    ],
-    palette: { from: "#2b2d31", to: "#f97362", accent: "#c9f73a" },
-  },
-  {
-    slug: "cooper-vets",
-    title: "Fully booked in six weeks",
-    client: "Cooper Veterinary Clinic",
-    service: "web",
-    serviceLabel: "Web Design & Dev",
-    year: "2025",
-    summary:
-      "Warm, fast, accessible site with integrated booking. Appointment no-shows down by a third thanks to reminder flows.",
-    critique: [
-      "WCAG AA throughout, tested with real screen-reader users",
-      "Emergency pathway reachable in one tap from any page",
-      "Micro-illustrations replace stocky pet photography",
-    ],
-    results: [
-      { value: "6wks", label: "to fully booked" },
-      { value: "-33%", label: "no-shows" },
-    ],
-    palette: { from: "#13301f", to: "#4ade80", accent: "#c9f73a" },
-  },
-  {
-    slug: "turner-solicitors",
-    title: "Authority you can search",
-    client: "Turner & Co Solicitors",
+    slug: "zoom-cars",
+    title: "0 to 10,000 organic visitors",
+    client: "Zoom Cars Bristol",
     service: "seo",
     serviceLabel: "Local SEO",
-    year: "2026",
+    year: "2025",
+    url: "https://zoomcars.org",
     summary:
-      "Top-three rankings for every practice-area search in Bristol, with a content strategy built around the questions clients actually ask.",
+      "Full architecture and content restructure plus a platform migration, taking a car hire business from near-invisible to ranking for its priority keyword groups.",
     critique: [
-      "Practice-area hubs with FAQ schema for AI-answer visibility",
-      "E-E-A-T signals: every page authored by a named solicitor",
-      "Internal-link architecture mirrors the firm's referral logic",
+      "Migrated Wix to WordPress on Hostinger with a staging environment and standardised templates",
+      "Technical fundamentals fixed: crawlability, sitemaps, URL normalisation, schema markup",
+      "Monthly indexed page submissions taken from 0 to 15+",
     ],
     results: [
-      { value: "Top 3", label: "every key search" },
-      { value: "+92%", label: "qualified enquiries" },
+      { value: "10,000", label: "organic visitors, 3x in 90 days" },
+      { value: "-30%", label: "time to launch" },
     ],
     palette: { from: "#11233f", to: "#60a5fa", accent: "#c9f73a" },
   },
   {
-    slug: "securefast-locksmiths",
-    title: "Found first, called first",
-    client: "SecureFast Locksmiths",
-    service: "seo",
-    serviceLabel: "Local SEO",
-    year: "2024",
+    slug: "swhp-bristol",
+    title: "A plumbing site that leads from day one",
+    client: "SWHP Plumbers Bristol",
+    service: "web",
+    serviceLabel: "Web Design & Dev",
+    year: "2026",
+    url: "https://swhpbristol.co.uk",
     summary:
-      "Emergency-intent search domination across Gloucester: top of the map pack for every urgent locksmith search that matters.",
+      "Built and deployed a conversion-focused plumbing website from scratch, launching with full on-page SEO configured and lead flow arriving inside the first month.",
     critique: [
-      "Call-tracking numbers wired per landing page for true attribution",
-      "Profile posts scheduled around peak lockout hours",
-      "Service-area schema tuned suburb by suburb",
+      "Launched with 12+ live pages, each with titles, meta descriptions, schema and internal linking",
+      "Ranked for 20+ high-intent plumbing service and location keywords",
+      "Crawl and indexing workflows established, 8+ keyword-aligned pages published",
     ],
     results: [
-      { value: "+148%", label: "emergency calls" },
-      { value: "Top 3", label: "in 11 service areas" },
+      { value: "10+", label: "leads in month one" },
+      { value: "20+", label: "service keywords ranking" },
+    ],
+    palette: { from: "#13301f", to: "#4ade80", accent: "#c9f73a" },
+  },
+  {
+    slug: "qn-foods",
+    title: "A restaurant brand, online",
+    client: "QN Foods",
+    service: "web",
+    serviceLabel: "Web Design & Dev",
+    year: "2025",
+    url: "https://desikhabbay.co.uk",
+    summary:
+      "New restaurant website built from scratch for Desi Khabbay, structured so menus, locations and ordering are all reachable in a tap.",
+    critique: [
+      "Menu structured as crawlable content, not a flat PDF",
+      "Location and opening-hours schema for local discovery",
+      "Mobile-first build for diners searching on the move",
+    ],
+    results: [
+      { value: "Live", label: "desikhabbay.co.uk" },
+      { value: "Built", label: "from scratch" },
+    ],
+    palette: { from: "#332014", to: "#f59e0b", accent: "#c9f73a" },
+  },
+  {
+    slug: "nmp-pakistan",
+    title: "A national movement, launched",
+    client: "NMP Pakistan",
+    service: "web",
+    serviceLabel: "Web Design & Dev",
+    year: "2025",
+    url: "https://nationalmovementpakistan.pk",
+    summary:
+      "Full website build for a national political movement, designed to carry heavy traffic spikes and communicate clearly at scale.",
+    critique: [
+      "Information architecture built around fast-changing campaign content",
+      "Performance budget set for low-bandwidth mobile connections",
+      "Editorial templates so the team can publish without a developer",
+    ],
+    results: [
+      { value: "Live", label: "nationalmovementpakistan.pk" },
+      { value: "Full", label: "site build" },
+    ],
+    palette: { from: "#1c1633", to: "#7c6cf0", accent: "#c9f73a" },
+  },
+  {
+    slug: "am-school-of-motoring",
+    title: "Audit to implementation",
+    client: "A.M School of Motoring",
+    service: "seo",
+    serviceLabel: "Local SEO",
+    year: "2025",
+    summary:
+      "Full SEO audit for a driving school, then the implementation to match: the findings actually shipped rather than sitting in a PDF.",
+    critique: [
+      "Technical audit covering crawl, indexation and on-page gaps",
+      "Local service and area targeting mapped to real search demand",
+      "Recommendations implemented, not just handed over",
+    ],
+    results: [
+      { value: "Audit", label: "+ implementation" },
+      { value: "Local", label: "search targeting" },
+    ],
+    palette: { from: "#2b2d31", to: "#f97362", accent: "#c9f73a" },
+  },
+  {
+    slug: "michael-graham",
+    title: "Ready for AI search",
+    client: "Michael Graham",
+    service: "seo",
+    serviceLabel: "Local SEO",
+    year: "2026",
+    summary:
+      "Combined SEO and GEO audit: how the brand performs in classic Google results, and whether AI assistants can find and cite it.",
+    critique: [
+      "Traditional technical and on-page SEO audit",
+      "GEO review: entity clarity and citability for AI answer engines",
+      "Prioritised fix list ordered by impact, not by effort",
+    ],
+    results: [
+      { value: "SEO", label: "+ GEO audit" },
+      { value: "AI", label: "citation readiness" },
     ],
     palette: { from: "#14323b", to: "#38bdf8", accent: "#c9f73a" },
   },
   {
-    slug: "bristol-scaffold",
-    title: "Safety you can see",
-    client: "Bristol Scaffold Co",
-    service: "brand",
-    serviceLabel: "UI/UX & Branding",
+    slug: "getride24",
+    title: "Where the traffic was leaking",
+    client: "GetRide24",
+    service: "seo",
+    serviceLabel: "Local SEO",
     year: "2025",
     summary:
-      "Full identity for a 60-van scaffolding firm: bold, compliant and unmistakable on any skyline in the city.",
+      "Technical SEO audit identifying the crawl, indexation and on-page issues holding organic performance back.",
     critique: [
-      "High-vis yellow checked against site-signage safety standards",
-      "Logotype legible at 200 metres on tower banners",
-      "Tender documents redesigned to win at first glance",
+      "Crawl and indexation review across the full site",
+      "On-page and metadata gap analysis",
+      "Issues ranked by ranking impact",
     ],
     results: [
-      { value: "+52%", label: "tender wins" },
-      { value: "60", label: "vans rebranded" },
+      { value: "Full", label: "technical audit" },
+      { value: "Ranked", label: "fix priorities" },
     ],
     palette: { from: "#33300f", to: "#facc15", accent: "#c9f73a" },
   },
   {
-    slug: "apex-fieldflow",
-    title: "Jobs that run themselves",
-    client: "Apex Electrical",
-    service: "saas",
-    serviceLabel: "SaaS Development",
-    year: "2025",
-    summary:
-      "Job-management app for a 12-engineer electrical firm: scheduling, certificates and invoicing in one flow.",
-    critique: [
-      "Offline-first so certificates save even in basements",
-      "One-thumb mobile flows designed for gloved hands",
-      "Auto-generated compliance certificates cut paperwork to minutes",
-    ],
-    results: [
-      { value: "22hrs", label: "admin saved weekly" },
-      { value: "100%", label: "paperless certificates" },
-    ],
-    palette: { from: "#2a1535", to: "#d946ef", accent: "#c9f73a" },
-  },
-  {
-    slug: "marina-estates",
-    title: "Listings that sell themselves",
-    client: "Marina & Co Estate Agents",
+    slug: "rallyn-pickleball",
+    title: "E-commerce, end to end",
+    client: "Rallyn Pickleball",
     service: "web",
     serviceLabel: "Web Design & Dev",
     year: "2026",
+    url: "https://erallyn.co.uk",
     summary:
-      "Property site with instant search and a three-question valuation funnel that fills the pipeline on its own.",
+      "A full e-commerce build for a pickleball brand: storefront, product structure and checkout, built and run in-house.",
     critique: [
-      "Search results render instantly from edge cache",
-      "Valuation funnel reduced to three questions",
-      "Every listing page emits full schema for portal-free SEO",
+      "Product taxonomy built for search as well as browsing",
+      "Checkout flow trimmed to the minimum viable steps",
+      "Built, shipped and maintained end to end",
     ],
     results: [
-      { value: "4.2x", label: "valuation leads" },
-      { value: "0.6s", label: "load time" },
+      { value: "Live", label: "erallyn.co.uk" },
+      { value: "Full", label: "storefront build" },
     ],
     palette: { from: "#3e1020", to: "#fb7185", accent: "#c9f73a" },
   },
