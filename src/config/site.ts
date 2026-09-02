@@ -124,6 +124,14 @@ export const reviews = [
     text: "Within four months we were the first call in our area. The phone genuinely doesn't stop. We've hired two engineers just to keep up.",
   },
   {
+    name: "Craig Mullen",
+    business: "Mullen Roofing, Swindon",
+    initials: "CM",
+    rating: 5,
+    date: "May 2026",
+    text: "The Google Ads paid for themselves inside a fortnight. Best part is the calls are people who actually want a roof, not tyre-kickers or salesmen.",
+  },
+  {
     name: "Priya Sharma",
     business: "Sharma Dental Studio, Bath",
     initials: "PS",
@@ -167,7 +175,7 @@ export const reviews = [
 
 /* ── Services ─────────────────────────────────────────────────── */
 
-export type ServiceKey = "seo" | "brand" | "saas" | "web";
+export type ServiceKey = "seo" | "ads" | "brand" | "saas" | "web";
 
 export const services: {
   key: ServiceKey;
@@ -212,8 +220,36 @@ export const services: {
     },
   },
   {
-    key: "brand",
+    key: "ads",
     index: "02",
+    title: "Google Ads",
+    short: "Buy the top of the page",
+    blurb:
+      "Search, Local Services and remarketing campaigns that put you above the map pack today, while your SEO compounds underneath.",
+    deliverables: [
+      "Search campaigns",
+      "Local Services Ads",
+      "Conversion tracking",
+      "Negative keyword control",
+      "Landing page match",
+    ],
+    detail: {
+      headline: "Leads this week, not next quarter.",
+      body: "SEO compounds, but it takes months. Paid search buys you the top of the page from day one. We build tightly themed campaigns around genuine buying intent, cut the waste with aggressive negative keywords, and track every call and form so you know exactly what a booked job costs you.",
+      includes: [
+        "Account structure & keyword intent mapping",
+        "Google Local Services Ads setup & verification",
+        "Call, form and offline conversion tracking",
+        "Negative keyword lists that stop wasted spend",
+        "Ad copy and landing pages built to match the search",
+        "Monthly cost-per-enquiry reporting in plain English",
+      ],
+      outcome: { value: "Day 1", label: "enquiries from the moment campaigns go live" },
+    },
+  },
+  {
+    key: "brand",
+    index: "03",
     title: "UI/UX & Branding",
     short: "Look like the obvious choice",
     blurb:
@@ -240,7 +276,7 @@ export const services: {
   },
   {
     key: "saas",
-    index: "03",
+    index: "04",
     title: "SaaS Development",
     short: "Systemise your operations",
     blurb:
@@ -267,7 +303,7 @@ export const services: {
   },
   {
     key: "web",
-    index: "04",
+    index: "05",
     title: "Website Design & Development",
     short: "Your hardest-working salesperson",
     blurb:
@@ -333,6 +369,27 @@ export const projects: Project[] = [
       { value: "30+", label: "enquiries in first 3 months" },
     ],
     palette: { from: "#0e3b32", to: "#2dd4bf", accent: "#c9f73a" },
+  },
+  {
+    slug: "roof-king-google-ads",
+    title: "Top of the page from day one",
+    client: "Roof King Bristol",
+    service: "ads",
+    serviceLabel: "Google Ads",
+    year: "2026",
+    url: "https://roofkingbristol.co.uk",
+    summary:
+      "Paid search running alongside the SEO programme: Search and Local Services campaigns capturing roofing demand that would otherwise go to whoever bid highest.",
+    critique: [
+      "Campaigns split by job type so ad copy always matches the search",
+      "Negative keyword lists built to strip out DIY and jobs-board traffic",
+      "Call and form conversions tracked end to end, so cost per enquiry is a real number",
+    ],
+    results: [
+      { value: "LSA", label: "Google Guaranteed setup" },
+      { value: "Tracked", label: "every call and form" },
+    ],
+    palette: { from: "#141d33", to: "#4285f4", accent: "#c9f73a" },
   },
   {
     slug: "zoom-cars",
@@ -691,6 +748,7 @@ export const faqs = [
 
 export const marqueeItems = [
   "Local SEO",
+  "Google Ads",
   "UI/UX & Branding",
   "SaaS Development",
   "Web Design & Development",

@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import {
   MapPin,
+  Target,
   PenTool,
   LayoutDashboard,
   Globe,
@@ -13,17 +14,19 @@ import { services, type ServiceKey } from "@/config/site";
 
 const icons: Record<ServiceKey, LucideIcon> = {
   seo: MapPin,
+  ads: Target,
   brand: PenTool,
   saas: LayoutDashboard,
   web: Globe,
 };
 
-/** Asymmetric bento spans: SEO and Web get the wide cards. */
+/** Asymmetric bento: rows of 12, with Web closing full-width. */
 const spans: Record<ServiceKey, string> = {
   seo: "md:col-span-7",
+  ads: "md:col-span-5",
   brand: "md:col-span-5",
-  saas: "md:col-span-5",
-  web: "md:col-span-7",
+  saas: "md:col-span-7",
+  web: "md:col-span-12",
 };
 
 export default function Services() {
@@ -71,7 +74,7 @@ export default function Services() {
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-muted md:text-base">
-            Four disciplines, engineered to work as one, so every pound you
+            Five disciplines, engineered to work as one, so every pound you
             spend feeds the same growth engine.
           </p>
         </div>

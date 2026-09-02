@@ -1,6 +1,7 @@
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import Preloader from "@/components/ui/Preloader";
 import CustomCursor from "@/components/ui/CustomCursor";
+import WhatsAppWidget from "@/components/ui/WhatsAppWidget";
 import Navbar from "@/components/sections/Navbar";
 import Hero from "@/components/sections/Hero";
 import Marquee from "@/components/sections/Marquee";
@@ -42,6 +43,7 @@ export default function Home() {
         <FAQ />
       </main>
       <Footer />
+      <WhatsAppWidget />
     </>
   );
 }
