@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Shan Digital Marketing">
+  <rect width="64" height="64" rx="15" fill="#0a0b10"/>
+  <path d="M38 23C38 18.5 33.5 16 27 16C20.5 16 16 18.5 16 23C16 28 21 29.5 27 30.5C33 31.5 38 33 38 38C38 42.5 33.5 45 27 45C20.5 45 16 42.5 16 38"
+        stroke="#edede6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="49" cy="40" r="6.5" fill="#c9f73a"/>
+</svg>
