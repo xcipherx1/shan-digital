@@ -142,15 +142,15 @@ export default function Footer() {
               </li>
             </ul>
             <div className="mt-6 flex flex-wrap gap-2">
-              {Object.entries(site.social).map(([key, url]) => (
+              {site.social.map((item) => (
                 <a
-                  key={key}
-                  href={url}
+                  key={item.label}
+                  href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full border border-line px-4 py-2 font-label text-xs capitalize text-muted transition-colors duration-200 hover:border-lime hover:text-lime"
+                  className="rounded-full border border-line px-4 py-2 font-label text-xs text-muted transition-colors duration-200 hover:border-lime hover:text-lime"
                 >
-                  {key}
+                  {item.label}
                 </a>
               ))}
             </div>

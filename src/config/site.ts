@@ -46,12 +46,16 @@ export const site = {
     country: "United Kingdom",
     mapUrl: "https://maps.app.goo.gl/rfUUcCCTFzkB15bP6",
   },
-  social: {
-    linkedin: "https://www.linkedin.com/in/syedattique-seo/",
-    instagram: "https://www.instagram.com/roofingmarketingagency/",
-    x: "https://x.com/shandigital",
-    Whatsapp: "tel:+44 7733 236110",
-  },
+  /** Footer social links. `label` is rendered verbatim, so brand
+   *  casing (TikTok, YouTube) survives; array order is display order. */
+  social: [
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/syedattique-seo/" },
+    { label: "Facebook", href: "https://www.facebook.com/danish.shah.735" },
+    { label: "Instagram", href: "https://www.instagram.com/shandigital.localseo" },
+    { label: "TikTok", href: "https://www.tiktok.com/@shandigitaluk" },
+    { label: "YouTube", href: "https://www.youtube.com/@Shandigitalmarketing-x4q" },
+    { label: "WhatsApp", href: "tel:+44 7733 236110" },
+  ],
 } as const;
 
 export const nav = [
