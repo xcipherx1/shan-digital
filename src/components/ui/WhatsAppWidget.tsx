@@ -19,9 +19,27 @@ function waUrl(message: string): string {
  */
 export default function WhatsAppWidget() {
   const [open, setOpen] = useState(false);
+  const [heroInView, setHeroInView] = useState(false);
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  /**
+   * The hero carries its own WhatsApp link, so the floating bubble stays
+   * out of the way while the hero is on screen. That avoids duplicating
+   * the same action and stops it covering the proof stats on mobile.
+   * On pages with no hero (`#top`), the bubble is always available.
+   */
+  useEffect(() => {
+    const hero = document.getElementById("top");
+    if (!hero || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setHeroInView(entry.isIntersecting),
+      { rootMargin: "-45% 0px 0px 0px" },
+    );
+    io.observe(hero);
+    return () => io.disconnect();
+  }, []);
 
   // Close on Escape or an outside click.
   useEffect(() => {
@@ -45,7 +63,14 @@ export default function WhatsAppWidget() {
   }
 
   return (
-    <div ref={panelRef} className="fixed bottom-5 left-5 z-40 print:hidden">
+    <div
+      ref={panelRef}
+      className={`fixed bottom-5 left-5 z-40 transition-all duration-300 print:hidden ${
+        heroInView && !open
+          ? "pointer-events-none translate-y-4 opacity-0"
+          : "translate-y-0 opacity-100"
+      }`}
+    >
       {open && (
         <div
           role="dialog"

@@ -4,113 +4,197 @@ import { useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-const COLS = 110;
-const ROWS = 55;
-const WIDTH = 26;
-const DEPTH = 13;
-
 const LIME = new THREE.Color("#c9f73a");
 const TEAL = new THREE.Color("#2dd4bf");
-const INK = new THREE.Color("#3a4154");
+const DIM = new THREE.Color("#2b3346");
+
+const FIELD_RADIUS = 11;
+const GRID = 54;
+const SPREAD = 24;
 
 /**
- * A low-poly particle terrain that ripples like a sonar/map surface —
- * a nod to "putting local businesses on the map". Colors sweep from
- * teal to lime across the field; the camera drifts with the pointer.
+ * The map: a circular field of dots standing in for a service area,
+ * brightest at the centre and fading toward the edge of coverage.
  */
-function ParticleTerrain() {
-  const points = useRef<THREE.Points>(null);
-  const group = useRef<THREE.Group>(null);
+function MapField() {
+  const { positions, colors } = useMemo(() => {
+    const pos: number[] = [];
+    const col: number[] = [];
+    const c = new THREE.Color();
 
-  const { positions, colors, basePositions } = useMemo(() => {
-    const count = COLS * ROWS;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const color = new THREE.Color();
+    for (let i = 0; i < GRID; i++) {
+      for (let j = 0; j < GRID; j++) {
+        const x = (i / (GRID - 1) - 0.5) * SPREAD;
+        const z = (j / (GRID - 1) - 0.5) * SPREAD;
+        const d = Math.hypot(x, z);
+        if (d > FIELD_RADIUS) continue;
 
-    let i = 0;
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const x = (c / (COLS - 1) - 0.5) * WIDTH;
-        const z = (r / (ROWS - 1) - 0.5) * DEPTH;
-        positions[i * 3] = x;
-        positions[i * 3 + 1] = 0;
-        positions[i * 3 + 2] = z;
-
-        // Sweep: ink at edges, teal mid, lime hot-spot right of centre
-        const t = c / (COLS - 1);
-        if (t < 0.55) color.lerpColors(INK, TEAL, t / 0.55);
-        else color.lerpColors(TEAL, LIME, (t - 0.55) / 0.45);
-        const fade = 1 - Math.abs(r / (ROWS - 1) - 0.5) * 0.9;
-        colors[i * 3] = color.r * fade;
-        colors[i * 3 + 1] = color.g * fade;
-        colors[i * 3 + 2] = color.b * fade;
-        i++;
+        pos.push(x, 0, z);
+        // Teal near the centre, fading into the background further out.
+        const t = Math.min(1, d / FIELD_RADIUS);
+        c.copy(TEAL).lerp(DIM, t * t);
+        col.push(c.r, c.g, c.b);
       }
     }
-    return { positions, colors, basePositions: positions.slice() };
+    return {
+      positions: new Float32Array(pos),
+      colors: new Float32Array(col),
+    };
   }, []);
 
-  useFrame(({ clock, pointer }) => {
-    const t = clock.getElapsedTime();
-    const geo = points.current?.geometry;
-    if (geo) {
-      const pos = geo.attributes.position.array as Float32Array;
-      for (let i = 0; i < pos.length; i += 3) {
-        const x = basePositions[i];
-        const z = basePositions[i + 2];
-        pos[i + 1] =
-          Math.sin(x * 0.55 + t * 0.8) * 0.45 +
-          Math.cos(z * 0.9 + t * 0.6) * 0.35 +
-          Math.sin((x + z) * 0.32 + t * 0.35) * 0.5;
-      }
-      geo.attributes.position.needsUpdate = true;
-    }
-    if (group.current) {
-      group.current.rotation.y = THREE.MathUtils.lerp(
-        group.current.rotation.y,
-        pointer.x * 0.12,
-        0.04,
-      );
-      group.current.rotation.x = THREE.MathUtils.lerp(
-        group.current.rotation.x,
-        0.42 - pointer.y * 0.06,
-        0.04,
-      );
+  return (
+    <points>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.055}
+        vertexColors
+        transparent
+        opacity={0.85}
+        sizeAttenuation
+        depthWrite={false}
+      />
+    </points>
+  );
+}
+
+/** One radar pulse: a ring expanding out across the field, then fading. */
+function Pulse({ delay, period }: { delay: number; period: number }) {
+  const mesh = useRef<THREE.Mesh>(null);
+  const material = useRef<THREE.MeshBasicMaterial>(null);
+
+  useFrame(({ clock }) => {
+    const t = ((clock.getElapsedTime() + delay) % period) / period;
+    const scale = 0.4 + t * FIELD_RADIUS;
+    mesh.current?.scale.setScalar(scale);
+    if (material.current) {
+      // Fade in quickly, then out across the sweep.
+      material.current.opacity = Math.min(t * 6, 1) * (1 - t) * 0.55;
     }
   });
 
   return (
-    <group ref={group} rotation={[0.42, 0, 0]} position={[0, -1.1, 0]}>
-      <points ref={points}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-          <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.05}
-          vertexColors
-          transparent
-          opacity={0.9}
-          sizeAttenuation
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </points>
+    <mesh ref={mesh} rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[0.98, 1, 96]} />
+      <meshBasicMaterial
+        ref={material}
+        color={LIME}
+        transparent
+        opacity={0}
+        side={THREE.DoubleSide}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+/**
+ * A business on the map. The primary pin is the client we put there;
+ * the rest are the surrounding area being scanned.
+ */
+function Pin({
+  position,
+  primary = false,
+}: {
+  position: [number, number];
+  primary?: boolean;
+}) {
+  const group = useRef<THREE.Group>(null);
+  const [x, z] = position;
+  const height = primary ? 1.5 : 0.9;
+  const color = primary ? LIME : TEAL;
+
+  useFrame(({ clock }) => {
+    if (!group.current) return;
+    // A slow bob so the map reads as alive, not a screenshot.
+    const t = clock.getElapsedTime();
+    group.current.position.y =
+      Math.sin(t * 1.1 + x * 0.7 + z * 0.4) * 0.07 + (primary ? 0.06 : 0);
+  });
+
+  return (
+    <group ref={group} position={[x, 0, z]}>
+      {/* stem down to the map */}
+      <mesh position={[0, height / 2, 0]}>
+        <cylinderGeometry args={[0.012, 0.012, height, 6]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+      {/* the marker */}
+      <mesh position={[0, height, 0]}>
+        <sphereGeometry args={[primary ? 0.17 : 0.1, 16, 16]} />
+        <meshBasicMaterial color={color} />
+      </mesh>
+      {/* ground halo */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <circleGeometry args={[primary ? 0.42 : 0.26, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.16} />
+      </mesh>
     </group>
   );
 }
 
+function Scene() {
+  const group = useRef<THREE.Group>(null);
+
+  // Surrounding businesses, scattered but clear of the centre pin.
+  const pins = useMemo<[number, number][]>(
+    () => [
+      [-4.2, -1.8],
+      [3.6, -2.6],
+      [-2.4, 3.1],
+      [5.1, 1.9],
+      [-6.2, 1.2],
+      [1.8, 4.3],
+    ],
+    [],
+  );
+
+  useFrame(({ pointer }) => {
+    if (!group.current) return;
+    // Gentle parallax so the map responds to the visitor.
+    group.current.rotation.y = THREE.MathUtils.lerp(
+      group.current.rotation.y,
+      pointer.x * 0.16,
+      0.035,
+    );
+    group.current.rotation.x = THREE.MathUtils.lerp(
+      group.current.rotation.x,
+      -pointer.y * 0.05,
+      0.035,
+    );
+  });
+
+  return (
+    <group ref={group}>
+      <MapField />
+      <Pulse delay={0} period={4.5} />
+      <Pulse delay={1.5} period={4.5} />
+      <Pulse delay={3} period={4.5} />
+      <Pin position={[0, 0]} primary />
+      {pins.map(([x, z]) => (
+        <Pin key={`${x}:${z}`} position={[x, z]} />
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Local search, visualised: a radar sweeping a service area, with the
+ * client's business pinned at the centre of it. Replaces the abstract
+ * terrain with something that says what the agency actually does.
+ */
 export default function HeroScene() {
   return (
     <Canvas
       className="!absolute inset-0"
-      camera={{ position: [0, 2.2, 7.5], fov: 55 }}
+      camera={{ position: [0, 6.4, 9.2], fov: 46 }}
       dpr={[1, 1.75]}
       gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
       aria-hidden
     >
-      <ParticleTerrain />
+      <Scene />
     </Canvas>
   );
 }

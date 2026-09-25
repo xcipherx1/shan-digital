@@ -123,14 +123,21 @@ export default function Hero() {
         aria-hidden
       />
       {showScene && (
-        <div className="absolute inset-x-0 bottom-0 h-[55%] opacity-70" aria-hidden>
+        <div
+          className="absolute inset-x-0 bottom-0 h-[48%] opacity-40 sm:h-[52%] sm:opacity-60"
+          aria-hidden
+        >
           <HeroScene />
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink to-transparent" />
+          {/* Fades the scene down into the page so it stays atmosphere
+              and never competes with the headline or the form. */}
+          <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink/55 to-transparent" />
         </div>
       )}
 
-      {/* pt clears the fixed header (contact bar + nav, ~93-101px) */}
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-10 pt-28 sm:px-8 sm:pb-14 sm:pt-32">
+      {/* pt clears the fixed header (contact bar + nav, ~93-101px).
+          Centred on phones where a left rag reads as unbalanced;
+          left-aligned from sm up where the line lengths carry it. */}
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-10 pt-28 text-center sm:px-8 sm:pb-14 sm:pt-32 sm:text-left">
         <p
           data-hero-eyebrow
           className="inline-flex items-center gap-2 rounded-full border border-line bg-ink-2/70 px-3.5 py-1.5 font-label text-[10px] font-medium uppercase tracking-[0.18em] text-muted backdrop-blur sm:text-[11px]"
@@ -139,7 +146,7 @@ export default function Hero() {
           {hero.eyebrow}
         </p>
 
-        <h1 className="font-display mt-5 max-w-3xl text-[clamp(2.3rem,7.5vw,4.5rem)] font-extrabold leading-[1.02] tracking-tight text-mist">
+        <h1 className="font-display mx-auto mt-7 max-w-3xl text-[clamp(2.1rem,7.5vw,4.5rem)] font-extrabold leading-[1.05] tracking-tight text-mist sm:mx-0 sm:mt-8">
           <Chars text="Be the first" />
           <br />
           <Chars text="business" />{" "}
@@ -152,13 +159,13 @@ export default function Hero() {
 
         <p
           data-hero-sub
-          className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg"
+          className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted sm:mx-0 sm:mt-7 sm:text-lg"
         >
           {hero.subhead}
         </p>
 
         {/* ── Money action 1: one-field audit start ── */}
-        <div data-hero-form className="mt-7 max-w-xl">
+        <div data-hero-form className="mx-auto mt-9 max-w-xl sm:mx-0 sm:mt-10">
           <form onSubmit={startAudit} className="flex flex-col gap-2.5 sm:flex-row">
             <label htmlFor="hero-business" className="sr-only">
               Your business name
@@ -190,7 +197,7 @@ export default function Hero() {
           <p className="mt-2.5 px-1 text-xs text-muted">{hero.cta.reassurance}</p>
 
           {/* ── Money actions 2 and 3: talk to a human right now ── */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 px-1">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-1 sm:justify-start">
             <span className="text-xs text-muted">Prefer to talk?</span>
             <a
               href={`tel:${site.phoneHref}`}
@@ -212,15 +219,15 @@ export default function Hero() {
         </div>
 
         {/* ── Proof: real, attributable client outcomes ── */}
-        <dl className="mt-10 grid grid-cols-1 gap-x-8 gap-y-4 border-t border-line pt-6 sm:grid-cols-3">
+        <dl className="mx-auto mt-12 grid max-w-xl grid-cols-3 gap-x-4 gap-y-4 border-t border-line pt-7 sm:mx-0 sm:max-w-none sm:gap-x-8">
           {hero.proof.map((p) => (
             <div key={p.client} data-hero-proof>
-              <dt className="font-display text-2xl font-extrabold tracking-tight text-lime sm:text-3xl">
+              <dt className="font-display text-xl font-extrabold tracking-tight text-lime sm:text-3xl">
                 {p.value}
               </dt>
-              <dd className="mt-0.5 text-xs leading-snug text-muted sm:text-sm">
+              <dd className="mt-1 text-[11px] leading-snug text-muted sm:text-sm">
                 {p.label}
-                <span className="mt-0.5 block text-[11px] text-muted/70">
+                <span className="mt-1 block text-[10px] text-muted/70 sm:text-[11px]">
                   {p.client}
                 </span>
               </dd>
