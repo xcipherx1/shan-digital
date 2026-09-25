@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Syne, Space_Grotesk, Newsreader } from "next/font/google";
-import { site, faqs } from "@/config/site";
+import { site } from "@/config/site";
 import "./globals.css";
 
 const syne = Syne({
@@ -79,16 +79,6 @@ const businessJsonLd = {
   ],
 };
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -103,10 +93,6 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(businessJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
         {children}
       </body>

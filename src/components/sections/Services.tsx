@@ -7,9 +7,12 @@ import {
   PenTool,
   LayoutDashboard,
   Globe,
+  ArrowUpRight,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { gsap, useGSAP, MOTION_OK } from "@/lib/gsap";
+import { serviceHref } from "@/config/service-pages";
 import { services, type ServiceKey } from "@/config/site";
 
 const icons: Record<ServiceKey, LucideIcon> = {
@@ -83,8 +86,9 @@ export default function Services() {
           {services.map((service) => {
             const Icon = icons[service.key];
             return (
-              <article
+              <Link
                 key={service.key}
+                href={serviceHref(service.key)}
                 data-service-card
                 className={`group relative overflow-hidden rounded-3xl border border-line bg-ink-2 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-lime/40 sm:p-9 ${spans[service.key]}`}
               >
@@ -117,7 +121,11 @@ export default function Services() {
                     </li>
                   ))}
                 </ul>
-              </article>
+                <span className="mt-6 inline-flex items-center gap-1.5 font-display text-sm font-bold text-lime">
+                  {service.title} details
+                  <ArrowUpRight className="size-4" aria-hidden />
+                </span>
+              </Link>
             );
           })}
         </div>

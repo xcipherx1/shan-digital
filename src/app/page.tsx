@@ -1,3 +1,4 @@
+import { faqs } from "@/config/site";
 import SmoothScroll from "@/components/providers/SmoothScroll";
 import Preloader from "@/components/ui/Preloader";
 import CustomCursor from "@/components/ui/CustomCursor";
@@ -19,9 +20,25 @@ import LeadMagnet from "@/components/sections/LeadMagnet";
 import FAQ from "@/components/sections/FAQ";
 import Footer from "@/components/sections/Footer";
 
+/** FAQPage schema belongs to the page whose FAQs these are, not to
+ *  every page in the site. */
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <SmoothScroll />
       <Preloader />
       <CustomCursor />

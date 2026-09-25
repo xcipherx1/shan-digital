@@ -32,14 +32,24 @@ export default function SmoothScroll() {
     // Keep ScrollTrigger perfectly in sync with Lenis' scroll position
     lenis.on("scroll", ScrollTrigger.update);
 
-    // Smoothly animate in-page anchor links (nav, CTAs, footer)
+    // Smoothly animate in-page anchor links (nav, CTAs, footer).
+    // Root-relative links like "/#lead" are treated as in-page only when
+    // we are already on "/", so the same nav works from a service page
+    // (where it should navigate home) and from the homepage (where it
+    // should glide).
     const onClick = (e: MouseEvent) => {
-      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>(
-        'a[href^="#"]',
-      );
+      const link = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
       const href = link?.getAttribute("href");
-      if (!href || href === "#") return;
-      const target = document.querySelector(href);
+      if (!href) return;
+
+      let hash = "";
+      if (href.startsWith("#")) hash = href;
+      else if (href.startsWith("/#") && window.location.pathname === "/") {
+        hash = href.slice(1);
+      }
+      if (!hash || hash === "#") return;
+
+      const target = document.querySelector(hash);
       if (!target) return;
       e.preventDefault();
       // negative offset clears the fixed header (~80px)

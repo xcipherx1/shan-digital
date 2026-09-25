@@ -59,12 +59,12 @@ export const site = {
 } as const;
 
 export const nav = [
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Work", href: "#work" },
-  { label: "Process", href: "#process" },
-  { label: "Results", href: "#results" },
-  { label: "FAQ", href: "#faq" },
+  { label: "About", href: "/#about" },
+  { label: "Services", href: "/#services" },
+  { label: "Work", href: "/#work" },
+  { label: "Process", href: "/#process" },
+  { label: "Results", href: "/#results" },
+  { label: "FAQ", href: "/#faq" },
 ] as const;
 
 /* ── Hero ──────────────────────────────────────────────────────── */

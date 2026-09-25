@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, ArrowUpRight, Mail, Phone } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
@@ -69,8 +70,8 @@ export default function Navbar() {
         className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5 sm:px-8 md:h-16"
         aria-label="Main navigation"
       >
-        <a
-          href="#top"
+        <Link
+          href="/#top"
           className="font-display text-lg font-bold tracking-tight text-mist"
         >
           {site.shortName}
@@ -78,7 +79,7 @@ export default function Navbar() {
           <span className="ml-2 hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted sm:inline">
             Digital Marketing
           </span>
-        </a>
+        </Link>
 
         <ul className="hidden items-center gap-8 lg:flex">
           {nav.map((item) => (
@@ -94,13 +95,13 @@ export default function Navbar() {
         </ul>
 
         <div className="flex items-center gap-3">
-          <a
-            href="#lead"
+          <Link
+            href="/#lead"
             className="hidden cursor-pointer items-center gap-1.5 rounded-full bg-lime px-5 py-2.5 font-display text-sm font-semibold text-coal transition-colors duration-200 hover:bg-lime-deep sm:inline-flex"
           >
             Get free audit
             <ArrowUpRight className="size-4" aria-hidden />
-          </a>
+          </Link>
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -155,15 +156,15 @@ export default function Navbar() {
                 </span>
               </a>
             ))}
-            <a
+            <Link
               data-menu-item
-              href="#lead"
+              href="/#lead"
               onClick={() => setOpen(false)}
               className="mt-8 inline-flex w-fit cursor-pointer items-center gap-2 rounded-full bg-lime px-7 py-4 font-display text-base font-semibold text-coal"
             >
               Get your free audit
               <ArrowUpRight className="size-5" aria-hidden />
-            </a>
+            </Link>
           </nav>
           <p data-menu-item className="px-6 pb-8 text-sm text-muted sm:px-10">
             {site.address.city}, {site.address.country} · {site.email}

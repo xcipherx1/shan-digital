@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   ArrowUp,
   ArrowUpRight,
@@ -7,6 +8,7 @@ import {
   Phone,
 } from "lucide-react";
 import { nav, services, site } from "@/config/site";
+import { serviceHref } from "@/config/service-pages";
 import LocalTime from "@/components/ui/LocalTime";
 
 export default function Footer() {
@@ -38,13 +40,13 @@ export default function Footer() {
               </em>
             </h2>
           </div>
-          <a
-            href="#lead"
+          <Link
+            href="/#lead"
             className="inline-flex w-fit shrink-0 cursor-pointer items-center gap-2 rounded-full bg-lime px-8 py-4 font-display text-base font-bold text-coal transition-colors duration-200 hover:bg-lime-deep"
           >
             Start with a free audit
             <ArrowUpRight className="size-5" aria-hidden />
-          </a>
+          </Link>
         </div>
 
         {/* Columns */}
@@ -93,7 +95,7 @@ export default function Footer() {
               {services.map((s) => (
                 <li key={s.key}>
                   <a
-                    href="#service-details"
+                    href={serviceHref(s.key)}
                     className="text-sm text-mist transition-colors duration-200 hover:text-lime"
                   >
                     {s.title}
@@ -163,14 +165,14 @@ export default function Footer() {
             © {year} {site.name}. All rights reserved.
           </p>
           <p>Designed & engineered in {site.address.city}, UK</p>
-          <a
-            href="#top"
+          <Link
+            href="/#top"
             className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-line px-4 py-2 font-label uppercase tracking-wider text-muted transition-colors duration-200 hover:border-lime hover:text-lime"
             aria-label="Back to top"
           >
             Back to top
             <ArrowUp className="size-3.5" aria-hidden />
-          </a>
+          </Link>
         </div>
       </div>
 
