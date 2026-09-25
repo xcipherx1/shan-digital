@@ -70,13 +70,26 @@ export const nav = [
 /* ── Hero ──────────────────────────────────────────────────────── */
 
 export const hero = {
-  eyebrow: "Bristol, United Kingdom · est. 2019",
+  eyebrow: "Local SEO · Google Ads · Websites",
+  headline: "Be the first business they call.",
+  subhead:
+    "We get UK trades and SMEs found first on Google, then turn those searches into booked jobs.",
+  /** Primary conversion. One field, lowest possible friction. */
+  cta: {
+    label: "Get my free audit",
+    placeholder: "Your business name",
+    /** Sits under the form: kills the three usual objections. */
+    reassurance: "Free · No obligation · Reply within 1 working day",
+  },
   rating: { score: "5.0", count: "40+ UK businesses" },
-  statBar: [
-    { value: "120+", label: "Projects shipped" },
-    { value: "3.4x", label: "Avg. lead growth" },
-    { value: "96%", label: "Client retention" },
-    { value: "£12m+", label: "Client revenue influenced" },
+  /**
+   * Real, attributable client outcomes taken from delivered work.
+   * Do not add a figure here that cannot be evidenced.
+   */
+  proof: [
+    { value: "3x", label: "organic clicks in 6 months", client: "Roof King Bristol" },
+    { value: "10,000", label: "organic visitors in 90 days", client: "Zoom Cars" },
+    { value: "10+", label: "leads in month one", client: "SWHP Plumbers" },
   ],
 } as const;
 
